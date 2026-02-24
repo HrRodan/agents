@@ -88,6 +88,7 @@ OllamaModels = Literal["llama3.2", "deepseek-r1:1.5b"]
 
 GeminiModels = Literal[
     "gemini-3-pro-preview",
+    "gemini-3.1-pro-preview",
     "gemini-2.5-flash",
     "gemini-2.5-flash-lite",
     "gemini-flash-latest",
