@@ -218,9 +218,11 @@ class LLMQuery(MultiModalMixin):
         """
         Parse XML-formatted tool calls embedded in message content.
 
-        Some models (especially those served via OpenRouter without native
-        function-calling support) return tool calls as XML inside the message
-        text rather than in the ``tool_calls`` field.  The expected format is::
+        Handles two distinct XML formats emitted by different models:
+
+        **Format 1 — Standard ``<invoke>`` (most OpenRouter models):**
+
+        .. code-block:: xml
 
             <function_calls>
               <invoke name="get_weather">
@@ -228,13 +230,22 @@ class LLMQuery(MultiModalMixin):
               </invoke>
             </function_calls>
 
-        CDATA sections are also supported for arguments that contain XML-unsafe
-        characters.
+        Arguments are a raw JSON string, optionally wrapped in a CDATA section.
 
-        Note: Regex-based XML parsing is intentionally used here because the
-        output is model-generated and may not be well-formed XML.  A proper XML
-        parser would raise on malformed input, which would silently swallow the
-        tool call.  Regex is more lenient at the cost of precision.
+        **Format 2 — DeepSeek 3.2 ``<functioninvoke>`` edge case:**
+
+        .. code-block:: xml
+
+            <functioninvoke name="run_api_agent">
+              <parameter name="query" string="true">Get base stats</parameter>
+            </functioninvoke>
+
+        Arguments are expressed as ``<parameter>`` child elements that are
+        collected into a dict and serialised to JSON.
+
+        Note: Regex-based XML parsing is intentional — model-generated XML is
+        often malformed, and a strict XML parser would raise rather than salvage
+        the tool call.  Regex is more lenient at the cost of precision.
 
         Args:
             content: The raw text content of the assistant message.
@@ -244,6 +255,10 @@ class LLMQuery(MultiModalMixin):
             Empty list if no XML tool calls are found.
         """
         tool_calls = []
+
+        # ----------------------------------------------------------------
+        # Path 1: Standard <function_calls><invoke> format
+        # ----------------------------------------------------------------
 
         # Match the outer wrapper — re.DOTALL so newlines are included
         function_calls_match = re.search(
@@ -255,25 +270,30 @@ class LLMQuery(MultiModalMixin):
 
             # Each <invoke name="fn_name">arguments</invoke> is one tool call
             invoke_matches = re.finditer(
-                r"<invoke(.*?)>(.*?)</invoke>", function_calls_content, re.DOTALL
+                r"<invoke(.*?)>(.*?)</invoke>",
+                function_calls_content,
+                re.DOTALL,
             )
 
             for match in invoke_matches:
                 attrs = match.group(1).strip()
                 arguments_str = match.group(2).strip()
 
-                # Extract the function name from the name attribute
+                # Extract the function name, supporting single and double quotes
                 name_match = re.search(r'name=["\']([^"\']+)["\']', attrs)
-                function_name = (
-                    name_match.group(1) if name_match else "error_missing_function_name"
-                )
+                if name_match:
+                    function_name = name_match.group(1)
+                else:
+                    # Fallback: trigger a named error in handle_tool_call so
+                    # the model receives a descriptive failure rather than a crash
+                    function_name = "error_missing_function_name"
 
                 # Strip CDATA wrapper if present — used when arguments contain
                 # characters that would break XML parsing (e.g. < > & quotes)
+                # CDATA format: <![CDATA[...]]>  (9 chars opening, 3 closing)
                 if arguments_str.startswith("<![CDATA[") and arguments_str.endswith(
                     "]]>"
                 ):
-                    # CDATA: 9 chars opening, 3 chars closing
                     arguments_str = arguments_str[9:-3].strip()
 
                 tool_calls.append(
@@ -283,6 +303,62 @@ class LLMQuery(MultiModalMixin):
                         "function": {"name": function_name, "arguments": arguments_str},
                     }
                 )
+
+        # ----------------------------------------------------------------
+        # Path 2: DeepSeek 3.2 <functioninvoke> format
+        # Arguments are <parameter> child elements, not a JSON string.
+        # The closing tag varies across model versions — all three are covered.
+        # ----------------------------------------------------------------
+
+        function_invoke_matches = re.finditer(
+            r"<functioninvoke([^>]*)>(.*?)</(?:parameterinvoke|functioninvoke|invoke)>",
+            content,
+            re.DOTALL | re.IGNORECASE,
+        )
+
+        for match in function_invoke_matches:
+            attrs = match.group(1).strip()
+            inner_content = match.group(2).strip()
+
+            # Extract function name from the opening tag's attributes
+            name_match = re.search(r'name=["\']([^"\']+)["\']', attrs)
+            if name_match:
+                function_name = name_match.group(1)
+            else:
+                function_name = "error_missing_function_name"
+
+            # Collect <parameter name="key">value</parameter> pairs into a dict.
+            # The closing </parameter> is optional — some DeepSeek responses omit it,
+            # so we allow the pattern to match up to end-of-string as fallback.
+            args: Dict[str, Any] = {}
+            param_matches = re.finditer(
+                r'<parameter\s+name=["\']([^"\']+)["\'][^>]*>(.*?)(?:</parameter>|$)',
+                inner_content,
+                re.DOTALL | re.IGNORECASE,
+            )
+
+            for p_match in param_matches:
+                param_name = p_match.group(1)
+                param_value = p_match.group(2).strip()
+                args[param_name] = param_value
+
+            if args:
+                # Serialise the collected parameters so handle_tool_call can
+                # parse them uniformly alongside native JSON arguments
+                arguments_str = json.dumps(args)
+            else:
+                # No <parameter> tags found — fall back to raw inner content
+                # (may be a plain JSON string or freeform text)
+                arguments_str = inner_content
+
+            tool_calls.append(
+                {
+                    "id": f"call_via_content_{generate_short_id()}",
+                    "type": "function",
+                    "function": {"name": function_name, "arguments": arguments_str},
+                }
+            )
+
         return tool_calls
 
     def _sanitize_tool_id(self, tool_id: Optional[str]) -> str:
