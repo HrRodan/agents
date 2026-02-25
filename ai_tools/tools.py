@@ -112,6 +112,7 @@ OpenRouterModels = Literal[
     "xiaomi/mimo-v2-flash:free",  # free model
     "qwen/qwen3-embedding-8b",  # Embedding model
     "nvidia/nemotron-3-nano-30b-a3b",
+    "anthropic/claude-opus-4.6",
 ]
 
 ModelName = Union[GPTModels, OllamaModels, GeminiModels, OpenRouterModels]
@@ -249,6 +250,56 @@ def handle_tool_call(
     return tool_response
 
 
+class _Pipeline:
+    def __init__(self, step1, step2):
+        self.step1 = step1
+        self.step2 = step2
+
+    def __ror__(self, input_data):
+        res = input_data | self.step1
+        return res | self.step2
+
+    def __or__(self, next_step):
+        return _Pipeline(self, next_step)
+
+    def __call__(self, input_data):
+        return self.__ror__(input_data)
+
+
+class _PipeableString(str):
+    """
+    A string subclass that allows piping its value into callables.
+    Example: "text" | LLMQuery() | print
+    """
+
+    def __or__(self, other):
+        if hasattr(other, "__ror__"):
+            return NotImplemented
+        if callable(other):
+            return other(self)
+        return NotImplemented
+
+
+class _PipeableQuery:
+    """
+    A wrapper for LLMQuery that captures optional kwargs for pipeline execution.
+    Example: "text" | LLMQuery()(model="gpt-5-mini")
+    """
+
+    def __init__(self, query_instance, query_kwargs):
+        self.query_instance = query_instance
+        self.query_kwargs = query_kwargs
+
+    def __ror__(self, other):
+        if isinstance(other, (str, list, dict)):
+            result = self.query_instance.invoke(other, **self.query_kwargs)
+            return _PipeableString(result) if isinstance(result, str) else result
+        return NotImplemented
+
+    def __or__(self, other):
+        return _Pipeline(self, other)
+
+
 class LLMQuery:
     def __init__(
         self,
@@ -265,6 +316,7 @@ class LLMQuery:
         embedding_model: str = "qwen/qwen3-embedding-8b",
         reasoning_effort: Optional[str] = None,
         history_limit: Optional[int] = None,
+        use_history: bool = True,
         response_format: Union[Dict[str, Any], Type[BaseModel], None] = None,
         logger: Optional[logging.Logger] = None,
     ):
@@ -285,6 +337,7 @@ class LLMQuery:
             embedding_model (str, optional): The embedding model to use. Defaults to "qwen/qwen3-embedding-8b".
             reasoning_effort (str, optional): The reasoning effort to use. Defaults to None.
             history_limit (int, optional): The maximum number of history entries to include. Defaults to None (all history).
+            use_history (bool, optional): Whether to use chat history by default. Defaults to True.
             response_format (Union[Dict[str, Any], Type[BaseModel], None], optional): The format of the response. Can be a dict or a Pydantic model. Defaults to None.
             logger (logging.Logger, optional): Logger instance for logging queries, responses, tool calls, and errors. If None, no logging is performed. Defaults to None.
         """
@@ -296,6 +349,7 @@ class LLMQuery:
         self.embedding_model = embedding_model
         self.reasoning_effort = reasoning_effort
         self.history_limit = history_limit
+        self.use_history = use_history
         self.stream = stream
         self.json_format = json_format
         self.response_format = response_format
@@ -596,7 +650,7 @@ class LLMQuery:
         self,
         user_prompt: Union[str, List[Dict[str, str]], None] = None,
         model: Optional[ModelName] = None,
-        use_history: bool = True,
+        use_history: Optional[bool] = None,
         display_output: bool = False,
         json_format: Optional[bool] = None,
         reasoning_effort: Optional[str] = None,
@@ -611,7 +665,7 @@ class LLMQuery:
         Args:
             user_prompt: The prompt to send.
             model: Optional model to use, overriding the default instance model.
-            use_history: Whether to include chat history.
+            use_history: Whether to include chat history (overrides instance default).
             display_output: Whether to display the output using IPython display.
             json_format: Whether to request JSON format (overrides instance default).
             reasoning_effort: Effort level for reasoning models.
@@ -642,6 +696,9 @@ class LLMQuery:
         target_history_limit = (
             history_limit if history_limit is not None else self.history_limit
         )
+        target_use_history = (
+            use_history if use_history is not None else self.use_history
+        )
 
         # Log query input
         if self.logger:
@@ -653,7 +710,7 @@ class LLMQuery:
         client = self._get_client_for_model(target_model)
 
         messages = self._prepare_messages(
-            user_prompt, use_history, history_limit=target_history_limit
+            user_prompt, target_use_history, history_limit=target_history_limit
         )
         request_kwargs = self._prepare_request_kwargs(
             messages,
@@ -843,7 +900,7 @@ class LLMQuery:
         self,
         user_prompt: Union[str, List[Dict[str, str]], None] = None,
         model: Optional[ModelName] = None,
-        use_history: bool = True,
+        use_history: Optional[bool] = None,
         display_output: bool = False,
         json_format: Optional[bool] = None,
         reasoning_effort: Optional[str] = None,
@@ -859,7 +916,7 @@ class LLMQuery:
         Args:
             user_prompt: The prompt to send.
             model: Optional model to use, overriding the default instance model.
-            use_history: Whether to include chat history.
+            use_history: Whether to include chat history (overrides instance default).
             display_output: Whether to display the output incrementally using IPython display.
             json_format: Whether to request JSON format (overrides instance default).
             reasoning_effort: Effort level for reasoning models.
@@ -893,11 +950,14 @@ class LLMQuery:
         target_history_limit = (
             history_limit if history_limit is not None else self.history_limit
         )
+        target_use_history = (
+            use_history if use_history is not None else self.use_history
+        )
 
         client = self._get_client_for_model(target_model)
 
         messages = self._prepare_messages(
-            user_prompt, use_history, history_limit=target_history_limit
+            user_prompt, target_use_history, history_limit=target_history_limit
         )
         request_kwargs = self._prepare_request_kwargs(
             messages,
@@ -1305,3 +1365,27 @@ class LLMQuery:
             input=text,
         )
         return [data.embedding for data in response.data]
+
+    def __call__(self, **kwargs):
+        """
+        Returns a callable wrapper that can be piped into, capturing optional kwargs for the query method.
+        Example: "some text" | llm_query(model="gpt-4o-mini")
+        """
+        return _PipeableQuery(self, kwargs)
+
+    def __ror__(self, other):
+        """
+        Allows piping input into the LLMQuery instance.
+        Example: "some text" | llm_query
+        """
+        if isinstance(other, (str, list, dict)):
+            result = self.invoke(other)
+            return _PipeableString(result) if isinstance(result, str) else result
+        return NotImplemented
+
+    def __or__(self, other):
+        """
+        Allows composing LLMQuery instances (or callables) into a reusable pipeline.
+        Example: pipeline = q1 | q2
+        """
+        return _Pipeline(self, other)
