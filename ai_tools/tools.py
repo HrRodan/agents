@@ -947,6 +947,28 @@ class LLMQuery(MultiModalMixin):
                 }
             )
 
+    def inject_system_message(self, content: str) -> None:
+        """
+        Append a system-role message to the chat history.
+
+        Unlike ``system_prompt`` (always prepended), injected messages live
+        inside ``chat_history`` and are subject to ``use_history`` /
+        ``history_limit`` — so judge feedback naturally ages out with old turns.
+
+        Use-cases: LLM-as-Judge corrections, mid-conversation rule changes,
+        dynamic guardrails.
+
+        Args:
+            content: The system directive to inject.
+
+        Example::
+
+            llm.query("Draft a reply.")
+            llm.inject_system_message("Too verbose — be concise from now on.")
+            llm.query("Revise the reply.")
+        """
+        self.chat_history.append({"role": "system", "content": content})
+
     def display_response(self) -> None:
         """Display the last response in the notebook using Markdown or JSON formatting."""
         if self.json_format:
@@ -967,6 +989,9 @@ class LLMQuery(MultiModalMixin):
             content = msg["content"]
             if role in ("User", "Tool"):
                 history.append(f"**{role}**: {content}")
+            elif role == "System":
+                # Injected system messages (distinct from the immutable system_prompt)
+                history.append(f"**System (injected)**: {content}")
             elif role == "Assistant":
                 if content is not None:
                     history.append(f"**Assistant**: {content}")
