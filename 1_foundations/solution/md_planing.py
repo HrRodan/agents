@@ -8,6 +8,7 @@ the terminal via the `rich` library.
 Usage:
     uv run md_planing.py
 """
+# %%
 
 # Force UTF-8 output on Windows so rich can render emoji without codec errors.
 import io
