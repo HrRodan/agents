@@ -53,7 +53,13 @@ from .config import (  # noqa: F401
     ModelName,
     MODEL_DICT,
 )
-from .utils import pretty_print_json, clean_json, handle_tool_call, generate_short_id
+from .utils import (
+    pretty_print_json,
+    clean_json,
+    handle_tool_call,
+    handle_tool_call_async,
+    generate_short_id,
+)
 from .pipeline import _Pipeline, _PipeableString, _PipeableQuery
 from .multimodal import MultiModalMixin
 
@@ -106,6 +112,7 @@ class LLMQuery(MultiModalMixin):
         history_limit: Optional[int] = None,
         use_history: bool = True,
         response_format: Union[Dict[str, Any], Type[BaseModel], None] = None,
+        concurrent_tool_calls: bool = True,
         logger: Optional[logging.Logger] = None,
     ):
         """
@@ -128,6 +135,11 @@ class LLMQuery(MultiModalMixin):
             history_limit: Max number of history entries to include.
             use_history: Whether to use chat history by default.
             response_format: Format (dict or Pydantic model) for structured outputs.
+            concurrent_tool_calls: If ``True``, tool calls in a single LLM
+                response are dispatched concurrently via ``asyncio.to_thread``.
+                Ideal for I/O-bound tools (e.g. sub-agent LLM calls, HTTP
+                requests).  Defaults to ``True``.  Set to ``False`` to force
+                sequential dispatch.
             logger: Logger instance for traces.
         """
         self.logger = logger
@@ -142,6 +154,7 @@ class LLMQuery(MultiModalMixin):
         self.stream = stream
         self.json_format = json_format
         self.response_format = response_format
+        self.concurrent_tool_calls = concurrent_tool_calls
         self.tools = tools
         self.functions = functions if functions is not None else []
         self.tool_choice = tool_choice
@@ -1022,14 +1035,47 @@ class LLMQuery(MultiModalMixin):
         """Display the full chat history in the notebook as formatted Markdown."""
         display(Markdown(self.get_chat_history_as_string()))
 
+    @staticmethod
+    def _run_async(coro):
+        """
+        Run an async coroutine from synchronous code.
+
+        Handles the common case where an event loop is already running
+        (e.g. Jupyter notebooks) by applying ``nest_asyncio`` to allow
+        re-entrant use of the loop.
+        """
+        import asyncio
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # No event loop running — safe to use asyncio.run()
+            return asyncio.run(coro)
+
+        # An event loop is already running (Jupyter / IPython / uvicorn etc.).
+        # Patch it so we can call run_until_complete() re-entrantly.
+        import nest_asyncio
+
+        nest_asyncio.apply(loop)
+        return loop.run_until_complete(coro)
+
     def get_tool_responses(self, max_iterations: int = 50) -> str:  # noqa: C901
         response = self.response
         iterations = 0
 
         while self.tool_calls and iterations < max_iterations:
-            tool_response = handle_tool_call(
-                self.tool_calls, functions=self.functions, logger=self.logger
-            )
+            if self.concurrent_tool_calls:
+                tool_response = self._run_async(
+                    handle_tool_call_async(
+                        self.tool_calls,
+                        functions=self.functions,
+                        logger=self.logger,
+                    )
+                )
+            else:
+                tool_response = handle_tool_call(
+                    self.tool_calls, functions=self.functions, logger=self.logger
+                )
             self.append_tool_result(tool_response)
 
             query_response = self.query(tools=self.tools)
