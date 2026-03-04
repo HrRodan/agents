@@ -40,6 +40,7 @@ class Smtp2goAPIClient:
                 "the SMTP2GO_API_KEY environment variable."
             )
         self.host = host
+        self.client = _FluentClient(self)
 
     def send(self, message: Union[Mail, dict]) -> Response:
         """Send an email via the SMTP2GO v3 API.
@@ -73,6 +74,36 @@ class Smtp2goAPIClient:
     def __repr__(self) -> str:
         masked = f"{self.api_key[:4]}...{self.api_key[-4:]}" if self.api_key else "None"
         return f"Smtp2goAPIClient(api_key={masked!r})"
+
+
+# ── Fluent API Support ────────────────────────────────────────────────────────
+
+
+class _FluentSend:
+    """Supports .send syntax."""
+
+    def __init__(self, api_client: Smtp2goAPIClient) -> None:
+        self._api_client = api_client
+
+    def post(self, request_body: Union[Mail, dict] = None, **_kwargs) -> Response:
+        """Support for fluent SendGrid syntax: .post(request_body=mail)"""
+        if request_body is None:
+            raise ValueError("request_body is required for fluent .post()")
+        return self._api_client.send(request_body)
+
+
+class _FluentMail:
+    """Supports .mail syntax."""
+
+    def __init__(self, api_client: Smtp2goAPIClient) -> None:
+        self.send = _FluentSend(api_client)
+
+
+class _FluentClient:
+    """Supports .client syntax."""
+
+    def __init__(self, api_client: Smtp2goAPIClient) -> None:
+        self.mail = _FluentMail(api_client)
 
 
 # Alias for true drop-in replacement of SendGrid imports.

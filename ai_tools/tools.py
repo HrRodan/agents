@@ -1060,6 +1060,25 @@ class LLMQuery(MultiModalMixin):
         return loop.run_until_complete(coro)
 
     def get_tool_responses(self, max_iterations: int = 50) -> str:  # noqa: C901
+        """
+        Run tool calls until no more are returned, up to max_iterations.
+
+        This method drives the tool-use loop:
+
+        1. Checks ``self.tool_calls`` for pending calls.
+        2. If present, calls ``handle_tool_call`` (synchronous) or
+           ``handle_tool_call_async`` (concurrent) to execute them.
+        3. Appends the tool result to the chat history via ``append_tool_result``.
+        4. Repeats until no more tool calls are returned or ``max_iterations``
+           is reached.
+
+        Args:
+            max_iterations: Maximum number of tool-use rounds to allow.
+
+        Returns:
+            The final assistant response text after all tool calls have been
+            processed.
+        """
         response = self.response
         iterations = 0
 

@@ -102,7 +102,7 @@ class TestSmtp2goAPIClientSend:
             "subject": "Raw Dict",
             "text_body": "Hello",
         }
-        response = client.send(raw)
+        client.send(raw)
 
         call_kwargs = mock_post.call_args
         sent_json = call_kwargs.kwargs["json"]
@@ -194,6 +194,30 @@ class TestSmtp2goAPIClientSend:
         assert response.status_code == 400
         assert response.body == '{"error": "bad request"}'
         assert response.headers["X-Foo"] == "bar"
+
+    @patch("smtp2go_sendgrid.client.requests.post")
+    def test_fluent_api_support(self, mock_post):
+        """Test SendGrid fluent API syntax: client.client.mail.send.post(request_body=mail)"""
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.text = '{"data": {"succeeded": 1}}'
+        mock_response.headers = {}
+        mock_post.return_value = mock_response
+
+        client = Smtp2goAPIClient(api_key="test-key")
+        mail = Mail(
+            from_email="sender@example.com",
+            to_emails="recipient@example.com",
+            subject="Fluent",
+            plain_text_content="Hello",
+        )
+        response = client.client.mail.send.post(request_body=mail)
+
+        assert response.status_code == 200
+        call_kwargs = mock_post.call_args.kwargs
+        sent_json = call_kwargs["json"]
+        assert sent_json["api_key"] == "test-key"
+        assert sent_json["subject"] == "Fluent"
 
 
 # ── Response ─────────────────────────────────────────────────────────────────
