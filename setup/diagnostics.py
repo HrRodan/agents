@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 from datetime import datetime
 
+
 class Diagnostics:
 
     FILENAME = 'report.txt'
