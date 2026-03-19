@@ -14,6 +14,7 @@ research_task:
     all the requested aspects of {company}. Include specific facts, figures,
     and examples where relevant.
   agent: researcher
+  output_file: output/research.md
 
 analysis_task:
   description: >
