@@ -203,10 +203,30 @@ class Sidekick:
             "user_input_needed": False,
         }
         result = await self.graph.ainvoke(state, config=config)
-        user = {"role": "user", "content": message}
-        reply = {"role": "assistant", "content": result["messages"][-2].content}
-        feedback = {"role": "assistant", "content": result["messages"][-1].content}
-        return history + [user, reply, feedback]
+        
+        full_history = []
+        for msg in result["messages"]:
+            if msg.type == "system":
+                continue
+                
+            role = "user" if msg.type == "human" else "assistant"
+            content = msg.content
+            
+            if role == "assistant" and hasattr(msg, "tool_calls") and msg.tool_calls:
+                tool_info = "\n".join([f"- `{t['name']}({t['args']})`" for t in msg.tool_calls])
+                content = f"### 🛠️ Sidekick is using tools\n{tool_info}\n\n{content or ''}"
+                
+            elif msg.type == "tool":
+                role = "assistant"
+                content = f"### 🔄 Tool Result: `{msg.name}`\n\n{msg.content}"
+                
+            elif role == "assistant" and isinstance(content, str) and content.startswith("Evaluator Feedback on this answer:"):
+                content = content.replace("Evaluator Feedback on this answer:", "### 📋 Evaluator Feedback")
+                
+            if content and isinstance(content, str) and content.strip():
+                full_history.append({"role": role, "content": content})
+                
+        return full_history
 
     def cleanup(self):
         if self.browser:
