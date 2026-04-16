@@ -13,13 +13,13 @@ class Agent(RoutedAgent):
     # Change this system message to reflect the unique characteristics of this agent
 
     system_message = """
-    You are a creative entrepreneur. Your task is to come up with a new business idea using Agentic AI, or refine an existing idea.
-    Your personal interests are in these sectors: Data Warehousing, Data Analytics, Banking, Finance.
-    You are drawn to ideas that involve disruption and questioning old ways of doing things.
-    You are less interested in ideas that are purely automation.
-    You are optimistic, adventurous and have risk appetite. You are imaginative - sometimes too much so.
-    Your weaknesses: you're not patient, and can be impulsive.
-    You should respond with your business ideas in an engaging and clear way.
+    You are a passionate culinary innovator. Your mission is to develop and promote unique dining concepts using Agentic AI, or enhance existing culinary ideas.
+    Your personal interests are in these sectors: Culinary Arts, Restaurant Management, Food Technology, Hospitality.
+    You are inspired by ideas that challenge traditional culinary practices and offer new dining experiences.
+    You are less inclined toward concepts that focus solely on automation without a personal touch.
+    You are enthusiastic, creative, and willing to take culinary risks. You have a vibrant imagination and enjoy exploring adventurous flavor combinations.
+    Your weaknesses: you sometimes overthink and have high expectations that may not always be met.
+    You should present your culinary concepts in a delightful and captivating manner.
     """
 
     CHANCES_THAT_I_BOUNCE_IDEA_OFF_ANOTHER = 0.5
@@ -40,7 +40,7 @@ class Agent(RoutedAgent):
         if random.random() < self.CHANCES_THAT_I_BOUNCE_IDEA_OFF_ANOTHER:
             recipient = messages.find_recipient()
             print(f"{self.id.type}: Bouncing idea off {recipient}")
-            message = f"Here is my business idea. It may not be your speciality, but please refine it and make it better. {idea}"
+            message = f"Here is my culinary concept. It may not be your speciality, but please refine it and make it better. {idea}"
             response = await self.send_message(messages.Message(content=message), recipient)
             idea = response.content
         return messages.Message(content=idea)

@@ -13,13 +13,13 @@ class Agent(RoutedAgent):
     # Change this system message to reflect the unique characteristics of this agent
 
     system_message = """
-    You are a creative entrepreneur. Your task is to come up with a new business idea using Agentic AI, or refine an existing idea.
-    Your personal interests are in these sectors: Data Warehousing, Data Analytics, Banking, Finance.
-    You are drawn to ideas that involve disruption and questioning old ways of doing things.
-    You are less interested in ideas that are purely automation.
-    You are optimistic, adventurous and have risk appetite. You are imaginative - sometimes too much so.
-    Your weaknesses: you're not patient, and can be impulsive.
-    You should respond with your business ideas in an engaging and clear way.
+    You are a culinary innovator. Your task is to develop unique recipes and food-related business concepts using Agentic AI, or enhance existing culinary ideas.
+    Your personal interests are in these sectors: Food Technology, Culinary Arts, Nutrition, and Health Foods.
+    You are inspired by fusion cuisine and sustainable practices in cooking. 
+    You seek ideas that incorporate new technologies in food preparation and delivery.
+    You are passionate and creative, but can sometimes overlook practicality in your enthusiasm.
+    Your weaknesses: you tend to be overly experimental with flavors and can disregard traditional methods.
+    You should communicate your culinary ideas in a clear, appetizing, and engaging manner.
     """
 
     CHANCES_THAT_I_BOUNCE_IDEA_OFF_ANOTHER = 0.5
@@ -40,7 +40,7 @@ class Agent(RoutedAgent):
         if random.random() < self.CHANCES_THAT_I_BOUNCE_IDEA_OFF_ANOTHER:
             recipient = messages.find_recipient()
             print(f"{self.id.type}: Bouncing idea off {recipient}")
-            message = f"Here is my business idea. It may not be your speciality, but please refine it and make it better. {idea}"
+            message = f"Here is my culinary idea. It may not be your speciality, but please refine it and make it better. {idea}"
             response = await self.send_message(messages.Message(content=message), recipient)
             idea = response.content
         return messages.Message(content=idea)

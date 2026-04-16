@@ -4,10 +4,16 @@ from autogen_agentchat.messages import TextMessage
 from autogen_ext.models.openai import OpenAIChatCompletionClient
 import messages
 from autogen_core import TRACE_LOGGER_NAME
+import pathlib
+import sys
 import importlib
 import logging
 from autogen_core import AgentId
 from dotenv import load_dotenv
+
+BASE_DIR = pathlib.Path(__file__).parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.append(str(BASE_DIR))
 
 load_dotenv(override=True)
 
@@ -44,7 +50,7 @@ class Creator(RoutedAgent):
             Respond only with the python code, no other text, and no markdown code blocks.\n\n\
             Be creative about taking the agent in a new direction, but don't change method signatures.\n\n\
             Here is the template:\n\n"
-        with open("agent.py", "r", encoding="utf-8") as f:
+        with open(BASE_DIR / "agent.py", "r", encoding="utf-8") as f:
             template = f.read()
         return prompt + template   
         
@@ -55,7 +61,7 @@ class Creator(RoutedAgent):
         agent_name = filename.split(".")[0]
         text_message = TextMessage(content=self.get_user_prompt(), source="user")
         response = await self._delegate.on_messages([text_message], ctx.cancellation_token)
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(BASE_DIR / filename, "w", encoding="utf-8") as f:
             f.write(response.chat_message.content)
         print(f"** Creator has created python code for agent {agent_name} - about to register with Runtime")
         module = importlib.import_module(agent_name)
