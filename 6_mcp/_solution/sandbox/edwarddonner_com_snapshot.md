@@ -1,0 +1,146 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#wp--skip-link--target"
+  - generic [ref=e3]:
+    - navigation "Navigation" [ref=e6]:
+      - list [ref=e7]:
+        - listitem [ref=e8]:
+          - link "Home" [ref=e9] [cursor=pointer]:
+            - /url: https://edwarddonner.com/
+        - listitem [ref=e10]:
+          - link "AI Curriculum" [ref=e11] [cursor=pointer]:
+            - /url: https://edwarddonner.com/curriculum/
+        - listitem [ref=e12]:
+          - link "Proficient AI Engineer" [ref=e13] [cursor=pointer]:
+            - /url: https://edwarddonner.com/proficient/
+        - listitem [ref=e14]:
+          - link "Connect Four" [ref=e15] [cursor=pointer]:
+            - /url: https://edwarddonner.com/connect-four/
+        - listitem [ref=e16]:
+          - link "Outsmart" [ref=e17] [cursor=pointer]:
+            - /url: https://edwarddonner.com/outsmart/
+        - listitem [ref=e18]:
+          - link "About" [ref=e19] [cursor=pointer]:
+            - /url: https://edwarddonner.com/about-me-and-about-nebula/
+        - listitem [ref=e20]:
+          - link "Posts" [ref=e21] [cursor=pointer]:
+            - /url: https://edwarddonner.com/posts/
+    - generic [ref=e25]:
+      - banner [ref=e27]:
+        - link "Edward Donner" [ref=e30] [cursor=pointer]:
+          - /url: https://edwarddonner.com/
+          - img "Edward Donner" [ref=e31]
+      - heading "Well, hi there." [level=1] [ref=e32]
+      - paragraph [ref=e33]:
+        - text: I’m Ed. I like writing code and experimenting with LLMs, and hopefully you’re here because you do too. I also enjoy amateur electronic music production (
+        - emphasis [ref=e34]: very
+        - text: amateur) and losing myself in
+        - link "Hacker News" [ref=e35] [cursor=pointer]:
+          - /url: https://news.ycombinator.com
+        - text: ", nodding my head sagely to things I only half understand."
+      - paragraph [ref=e36]:
+        - text: I’m the co-founder and CTO of
+        - link "Nebula.io" [ref=e37] [cursor=pointer]:
+          - /url: https://nebula.io/?utm_source=ed&utm_medium=referral
+        - text: ". We’re applying AI to a field where it can make a massive, positive impact: helping people discover their potential and pursue their reason for being. I’m previously the founder and CEO of AI startup untapt,"
+        - link "acquired in 2021" [ref=e38] [cursor=pointer]:
+          - /url: https://www.prnewswire.com/news-releases/wynden-stark-group-acquires-nyc-venture-backed-tech-startup-untapt-301269512.html
+        - text: .
+      - paragraph [ref=e39]:
+        - text: I will happily drone on for hours about LLMs to anyone in my vicinity. My friends got fed up with my impromptu lectures, and convinced me to make some Udemy courses. To my total joy (and shock) they’ve become best-selling, top-rated courses, with 500,000 enrolled across 194 countries. The
+        - link "full curriculum is here" [ref=e40] [cursor=pointer]:
+          - /url: https://edwarddonner.com/curriculum/
+        - text: . If you’re visiting from one of my courses – I’m super grateful!
+      - main [ref=e41]:
+        - list [ref=e43]:
+          - listitem [ref=e44]:
+            - generic [ref=e45]:
+              - figure [ref=e46]:
+                - 'link "AI Coder: Vibe Coder to Agentic Engineer – RESOURCES" [ref=e47] [cursor=pointer]':
+                  - /url: https://edwarddonner.com/2026/02/17/ai-coder-vibe-coder-to-agentic-engineer/
+                  - 'img "AI Coder: Vibe Coder to Agentic Engineer – RESOURCES" [ref=e48]'
+              - time [ref=e50]: February 17, 2026
+              - 'heading "AI Coder: Vibe Coder to Agentic Engineer – RESOURCES" [level=2] [ref=e51]':
+                - 'link "AI Coder: Vibe Coder to Agentic Engineer – RESOURCES" [ref=e52] [cursor=pointer]':
+                  - /url: https://edwarddonner.com/2026/02/17/ai-coder-vibe-coder-to-agentic-engineer/
+          - listitem [ref=e53]:
+            - generic [ref=e54]:
+              - figure [ref=e55]:
+                - link "AI Builder with n8n – Create Agents and Voice Agents – RESOURCES" [ref=e56] [cursor=pointer]:
+                  - /url: https://edwarddonner.com/2026/01/04/ai-builder-with-n8n-create-agents-and-voice-agents/
+                  - img "AI Builder with n8n – Create Agents and Voice Agents – RESOURCES" [ref=e57]
+              - time [ref=e59]: January 4, 2026
+              - heading "AI Builder with n8n – Create Agents and Voice Agents – RESOURCES" [level=2] [ref=e60]:
+                - link "AI Builder with n8n – Create Agents and Voice Agents – RESOURCES" [ref=e61] [cursor=pointer]:
+                  - /url: https://edwarddonner.com/2026/01/04/ai-builder-with-n8n-create-agents-and-voice-agents/
+          - listitem [ref=e62]:
+            - generic [ref=e63]:
+              - figure [ref=e64]:
+                - link "AI Engineering MLOps Track – Deploy AI to Production – RESOURCES" [ref=e65] [cursor=pointer]:
+                  - /url: https://edwarddonner.com/2025/09/15/ai-in-production-gen-ai-and-agentic-ai-on-aws-at-scale/
+                  - img "AI Engineering MLOps Track – Deploy AI to Production – RESOURCES" [ref=e66]
+              - time [ref=e68]: September 15, 2025
+              - heading "AI Engineering MLOps Track – Deploy AI to Production – RESOURCES" [level=2] [ref=e69]:
+                - link "AI Engineering MLOps Track – Deploy AI to Production – RESOURCES" [ref=e70] [cursor=pointer]:
+                  - /url: https://edwarddonner.com/2025/09/15/ai-in-production-gen-ai-and-agentic-ai-on-aws-at-scale/
+          - listitem [ref=e71]:
+            - generic [ref=e72]:
+              - figure [ref=e73]:
+                - link "Which order to take the AI courses?" [ref=e74] [cursor=pointer]:
+                  - /url: https://edwarddonner.com/2025/05/28/connecting-my-courses-become-an-llm-expert-and-leader/
+                  - img "Which order to take the AI courses?" [ref=e75]
+              - time [ref=e77]: May 28, 2025
+              - heading "Which order to take the AI courses?" [level=2] [ref=e78]:
+                - link "Which order to take the AI courses?" [ref=e79] [cursor=pointer]:
+                  - /url: https://edwarddonner.com/2025/05/28/connecting-my-courses-become-an-llm-expert-and-leader/
+    - generic [ref=e81]:
+      - generic [ref=e82]:
+        - heading "Navigation" [level=4] [ref=e83]
+        - navigation "Navigation 2" [ref=e84]:
+          - list [ref=e85]:
+            - listitem [ref=e86]:
+              - link "Home" [ref=e87] [cursor=pointer]:
+                - /url: https://edwarddonner.com/
+            - listitem [ref=e88]:
+              - link "AI Curriculum" [ref=e89] [cursor=pointer]:
+                - /url: https://edwarddonner.com/curriculum/
+            - listitem [ref=e90]:
+              - link "Proficient AI Engineer" [ref=e91] [cursor=pointer]:
+                - /url: https://edwarddonner.com/proficient/
+            - listitem [ref=e92]:
+              - link "Connect Four" [ref=e93] [cursor=pointer]:
+                - /url: https://edwarddonner.com/connect-four/
+            - listitem [ref=e94]:
+              - link "Outsmart" [ref=e95] [cursor=pointer]:
+                - /url: https://edwarddonner.com/outsmart/
+            - listitem [ref=e96]:
+              - link "About" [ref=e97] [cursor=pointer]:
+                - /url: https://edwarddonner.com/about-me-and-about-nebula/
+            - listitem [ref=e98]:
+              - link "Posts" [ref=e99] [cursor=pointer]:
+                - /url: https://edwarddonner.com/posts/
+      - generic [ref=e100]:
+        - heading "Get in touch" [level=4] [ref=e101]
+        - generic [ref=e102]:
+          - paragraph [ref=e103]: ed [at] edwarddonner [dot] com
+          - paragraph [ref=e104]:
+            - link "www.edwarddonner.com" [ref=e105] [cursor=pointer]:
+              - /url: mailto:hello@mygroovydomain.com
+      - generic [ref=e106]:
+        - heading "Follow me" [level=4] [ref=e107]
+        - list [ref=e108]:
+          - listitem [ref=e109]:
+            - link "LinkedIn" [ref=e110] [cursor=pointer]:
+              - /url: https://www.linkedin.com/in/eddonner/
+              - img [ref=e111]
+              - generic [ref=e113]: LinkedIn
+          - listitem [ref=e114]:
+            - link "Twitter" [ref=e115] [cursor=pointer]:
+              - /url: https://twitter.com/edwarddonner
+              - img [ref=e116]
+              - generic [ref=e118]: Twitter
+          - listitem [ref=e119]:
+            - link "Facebook" [ref=e120] [cursor=pointer]:
+              - /url: https://www.facebook.com/edward.donner.52
+              - img [ref=e121]
+              - generic [ref=e123]: Facebook
