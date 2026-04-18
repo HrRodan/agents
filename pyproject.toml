@@ -53,4 +53,4 @@ dev = [
 project-includes = ["**/*.py","**/*.ipynb"]
 project-excludes = ["**/node_modules", "**/__pycache__", "**/.[!/.]*/**", "**/community-contributions", "**/community-contributions/**", "**/community_contributions", "**/community_contributions/**"]
 use-ignore-files = true
-search-path = ["ai_tools", "smtp2go_sendgrid", "4_langgraph/_solution"]
+search-path = ["ai_tools", "smtp2go_sendgrid", "4_langgraph/_solution", "6_mcp/_solution"]
