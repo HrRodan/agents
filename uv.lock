@@ -35,6 +35,7 @@ dependencies = [
     { name = "langgraph-checkpoint-sqlite" },
     { name = "langsmith" },
     { name = "lxml" },
+    { name = "massive" },
     { name = "mcp", extra = ["cli"] },
     { name = "mcp-server-fetch" },
     { name = "openai" },
@@ -81,6 +82,7 @@ requires-dist = [
     { name = "langgraph-checkpoint-sqlite", specifier = ">=2.0.6" },
     { name = "langsmith", specifier = ">=0.3.18" },
     { name = "lxml", specifier = ">=5.3.1" },
+    { name = "massive", specifier = ">=2.5.0" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.5.0" },
     { name = "mcp-server-fetch", specifier = ">=2025.1.17" },
     { name = "openai", specifier = ">=1.68.2" },
@@ -2652,6 +2654,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/55/79/de6c16cc902f4fc372236926b0ce2ab7845268dcc30fb2fbb7f71b418631/marshmallow-3.26.2.tar.gz", hash = "sha256:bbe2adb5a03e6e3571b573f42527c6fe926e17467833660bebd11593ab8dfd57", size = 222095, upload-time = "2025-12-22T06:53:53.309Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/be/2f/5108cb3ee4ba6501748c4908b908e55f42a5b66245b4cfe0c99326e1ef6e/marshmallow-3.26.2-py3-none-any.whl", hash = "sha256:013fa8a3c4c276c24d26d84ce934dc964e2aa794345a0f8c7e5a7191482c8a73", size = 50964, upload-time = "2025-12-22T06:53:51.801Z" },
+]
+
+[[package]]
+name = "massive"
+version = "2.5.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "urllib3" },
+    { name = "websockets" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/da/b7/8085d71834a174eb74077fc8895248be2481bfe2e1256f73999fe5779d1a/massive-2.5.0.tar.gz", hash = "sha256:851f36b8f6f4ed49e61fb4b26c43f92cd1398167e4f273b4254f2fdb44f450bd", size = 49101, upload-time = "2026-04-10T13:51:50.98Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6a/2f/f7c4ddea682bc012f16ba2bf721996130f1a1b5bf99c23e5cabb6e02f54e/massive-2.5.0-py3-none-any.whl", hash = "sha256:fee100b087b4df2cd2b7b921bbddb70109f2afb45b4fddc6df27e6e8ff37bba6", size = 66904, upload-time = "2026-04-10T13:51:53.095Z" },
 ]
 
 [[package]]

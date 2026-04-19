@@ -1,0 +1,5 @@
+{"type":"entity","name":"Ed","entityType":"Person","observations":["Ed is an LLM engineer.","Ed is teaching a course about AI Agents."]}
+{"type":"entity","name":"AI Agents Course","entityType":"Course","observations":["The course is taught by Ed.","The course covers AI Agents and the MCP protocol."]}
+{"type":"entity","name":"MCP Protocol","entityType":"Protocol","observations":["MCP protocol connects agents with tools, resources, and prompt templates.","MCP protocol makes it easy to integrate AI agents with capabilities."]}
+{"type":"relation","from":"Ed","to":"AI Agents Course","relationType":"teaches"}
+{"type":"relation","from":"AI Agents Course","to":"MCP Protocol","relationType":"covers"}
