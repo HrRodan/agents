@@ -1,65 +1,60 @@
-import functools
-import time
+from functools import partial, lru_cache, wraps, singledispatch
 
-# 1. Using @functools.lru_cache to memoize a recursive function
-@functools.lru_cache(maxsize=None)
+# 1. @lru_cache: Memoization to speed up expensive/recursive calls
+@lru_cache(maxsize=None)
 def fibonacci(n):
     if n < 2:
         return n
     return fibonacci(n-1) + fibonacci(n-2)
 
-# 2. Using functools.partial to create a pre-configured function
-def power(base, exponent):
-    return base ** exponent
-
-square = functools.partial(power, exponent=2)
-cube = functools.partial(power, exponent=3)
-
-# 3. Using functools.singledispatch for type-based function overloading
-@functools.singledispatch
-def format_data(data):
-    return f"Generic: {data}"
-
-@format_data.register(int)
-def _(data):
-    return f"Integer: {data}"
-
-@format_data.register(list)
-def _(data):
-    return f"List of length {len(data)}: {', '.join(map(str, data))}"
-
-# 4. Using @functools.wraps to preserve metadata in a decorator
-def logger(func):
-    @functools.wraps(func)
+# 2. @wraps: Preserve metadata of the original function when decorating
+def simple_decorator(f):
+    @wraps(f)
     def wrapper(*args, **kwargs):
-        print(f"Calling {func.__name__}...")
-        return func(*args, **kwargs)
+        print(f"Calling function: {f.__name__}")
+        return f(*args, **kwargs)
     return wrapper
 
-@logger
-def say_hello(name):
+@simple_decorator
+def greet(name):
     """Greets the user."""
     return f"Hello, {name}!"
 
+# 3. partial: Freeze some arguments of a function
+def power(base, exponent):
+    return base ** exponent
+
+square = partial(power, exponent=2)
+cube = partial(power, exponent=3)
+
+# 4. @singledispatch: Function overloading based on the first argument type
+@singledispatch
+def process(data):
+    print(f"Generic processing: {data}")
+
+@process.register(int)
+def _(data):
+    print(f"Processing an integer: {data + 10}")
+
+@process.register(list)
+def _(data):
+    print(f"Processing a list of length: {len(data)}")
+
 if __name__ == "__main__":
-    print("--- 1. LRU Cache (Fibonacci) ---")
-    start = time.perf_counter()
-    result = fibonacci(35)
-    end = time.perf_counter()
-    print(f"Fibonacci(35) = {result} (Time: {end - start:.6f}s)")
-    print(f"Cache Performance: {fibonacci.cache_info()}\n")
+    print("--- lru_cache example ---")
+    print(f"Fibonacci(30): {fibonacci(30)}")
+    print(fibonacci.cache_info())
 
-    print("--- 2. Partial Functions ---")
-    print(f"Square of 5: {square(5)}")
-    print(f"Cube of 5: {cube(5)}\n")
+    print("\n--- wraps example ---")
+    print(greet("Alice"))
+    print(f"Function Name: {greet.__name__}")
+    print(f"Docstring: {greet.__doc__}")
 
-    print("--- 3. Single Dispatch ---")
-    print(format_data(42))
-    print(format_data([1, 2, 3]))
-    print(format_data("Hello")) # Generic fallback
-    print("")
+    print("\n--- partial example ---")
+    print(f"5 squared: {square(5)}")
+    print(f"2 cubed: {cube(2)}")
 
-    print("--- 4. Wraps Decorator ---")
-    print(say_hello("World"))
-    print(f"Function Name: {say_hello.__name__}")
-    print(f"Function Docstring: {say_hello.__doc__}")
+    print("\n--- singledispatch example ---")
+    process("Hello")
+    process(100)
+    process([1, 2, 3])
