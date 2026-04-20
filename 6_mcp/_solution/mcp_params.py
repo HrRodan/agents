@@ -5,7 +5,7 @@ from market import is_paid_polygon, is_realtime_polygon
 load_dotenv(override=True)
 
 brave_env = {"BRAVE_API_KEY": os.getenv("BRAVE_API_KEY")}
-polygon_api_key = os.getenv("POLYGON_API_KEY")
+polygon_api_key = os.getenv("MASSIVE_API_KEY")
 
 # The MCP server for the Trader to read Market Data
 
@@ -29,18 +29,20 @@ trader_mcp_server_params = [
 
 # The full set of MCP servers for the researcher: Fetch, Brave Search and Memory
 
+memory_params = {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": "/home/martin/Python/Projects/Github/agents/6_mcp/_solution/memory/memory.jsonl"
+  }
+}
 
 def researcher_mcp_server_params(name: str):
     return [
         {"command": "uvx", "args": ["mcp-server-fetch"]},
-        {
-            "command": "npx",
-            "args": ["-y", "@modelcontextprotocol/server-brave-search"],
-            "env": brave_env,
-        },
-        {
-            "command": "npx",
-            "args": ["-y", "mcp-memory-libsql"],
-            "env": {"LIBSQL_URL": f"file:./memory/{name}.db"},
-        },
+        {"command": "npx", "args": ["-y", "@brave/brave-search-mcp-server"], "env": brave_env},
+        memory_params
     ]
